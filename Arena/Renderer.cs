@@ -17,7 +17,16 @@ namespace Arena
             SetPlayers(ref map, players);
             SetLighthouses(ref map, lighthouses);
 
-            string renderResult = RenderMap(map);
+            StringBuilder renderResult = RenderMap(map);
+
+            renderResult.AppendLine();
+
+            foreach (IPlayer player in players)
+            {
+                renderResult.AppendLine(String.Format("Player {0}: [{1},{2}] ({3})", player.Id, player.Position.X, player.Position.Y, player.Energy));
+            }
+
+            Console.SetCursorPosition(0, 0);
             Console.Write(renderResult);
         }
 
@@ -34,7 +43,13 @@ namespace Arena
         {
             foreach (IPlayer player in players)
             {
-                map.RenderGrid.Where(x => x.Position == player.Position).Single().Player = player;
+                RendererCell cell = map.RenderGrid.Where(x => x.Position == player.Position).Single();
+
+                if (cell.Players == null)
+                {
+                    cell.Players = new List<IPlayer>();
+                }
+                cell.Players.Add(player);
             }
         }
 
@@ -53,9 +68,9 @@ namespace Arena
                 return String.Format(CELLFORMAT, "··");
             }
 
-            if (cell.Energy == MAX_CELL_ENERGY)
+            if (cell.Players != null && cell.Players.Any())
             {
-                return String.Format(CELLFORMAT, "++");
+                return String.Format(CELLFORMAT, "<>");
             }
 
             if (cell.IsLighthouse)
@@ -63,9 +78,9 @@ namespace Arena
                 return String.Format(CELLFORMAT, "[]");
             }
 
-            if (cell.Player != null)
+            if (cell.Energy == MAX_CELL_ENERGY)
             {
-                return String.Format(CELLFORMAT, "¬¬");
+                return String.Format(CELLFORMAT, "++");
             }
 
             return String.Format(CELLFORMAT, cell.Energy.ToString("00"));
@@ -81,7 +96,7 @@ namespace Arena
             return strRow.ToString();
         }
 
-        private static string RenderMap(MapArena map)
+        private static StringBuilder RenderMap(MapArena map)
         {
             StringBuilder strMap = new StringBuilder();
 
@@ -90,7 +105,7 @@ namespace Arena
                 RendererCell[] row = map.RenderGrid.Where(c => c.Position.Y == i).ToArray();
                 strMap.AppendLine(RenderRow(row));
             }
-            return strMap.ToString();
+            return strMap;
         }
     }
 }

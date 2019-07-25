@@ -50,17 +50,31 @@ namespace Players
 
         private Vector2 RandomMovement()
         {
-            Vector2 move = new Vector2(rand.Next(2), rand.Next(2));
-            if (!IsValidMovement(move))
+            Vector2 move = new Vector2(rand.Next(3) - 1, rand.Next(3) - 1);
+            if (move.X == 0 && move.Y == 0)
             {
                 return RandomMovement();
             }
+
+            Vector2 target = this.Position + move;
+            if (!IsValidMovement(target))
+            {
+                return RandomMovement();
+            }
+
             return move;
         }
 
         private bool IsValidMovement(Vector2 destination)
-        {   
-            return this.Map.Grid.Where(x => x.Position == destination).Single().IsPlayable;
+        {
+            IEnumerable<ICell> cell = this.Map.Grid.Where(x => x.Position == destination);
+
+            if (!cell.Any())
+            {
+                return false;
+            }
+
+            return cell.Single().IsPlayable;
         }
     }
 }

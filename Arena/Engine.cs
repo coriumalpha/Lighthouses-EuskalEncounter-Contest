@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Threading;
 
 namespace Arena
 {
@@ -35,7 +36,6 @@ namespace Arena
 
         private void Turn(IPlayer player)
         {
-            Console.Clear();
             ITurnState state = new TurnState();
 
             IDecision decision = player.Play(state);
@@ -53,27 +53,54 @@ namespace Arena
 
         private void HandleMovement(IPlayer player, Vector2 target)
         {
-            if (!IsValidMovement(target))
+            Vector2 destination = player.Position + target;
+            if (!IsValidMovement(destination))
             {
                 throw new Exception("Invalid movement");
             }
 
-            player.Position += target;
+            player.Position = destination;
         }
 
         private void TurnDispatcher()
         {
             SetCellEnergy();
+            SetPlayerEnergy();
+            RemoveConsumedEnergy();
 
             foreach (IPlayer player in this.players)
             {
                 Turn(player);
-                Console.ReadLine();
+                //Console.ReadLine();
+                Thread.Sleep(500);
             }
             TurnDispatcher();
         }
 
         #region Turn methods
+        private void RemoveConsumedEnergy()
+        {
+            foreach (IPlayer player in this.players)
+            {
+                this.map.Grid.Where(x => x.Position == player.Position).Single().Energy = 0;
+            }
+        }
+
+        private void SetPlayerEnergy()
+        {
+            foreach (IPlayer player in this.players)
+            {
+                int cellEnergy = this.map.Grid.Where(x => x.Position == player.Position).Single().Energy;
+
+                if (this.players.Where(x => x.Position == player.Position).Count() > 1)
+                {
+                    player.Energy += (int)Math.Floor((double)cellEnergy / this.players.Where(x => x.Position == player.Position).Count());
+                }
+
+                player.Energy += cellEnergy;
+            }
+        }
+
         private void SetCellEnergy()
         {
             foreach (ICell cell in this.map.Grid)
@@ -159,7 +186,14 @@ namespace Arena
         #region Helper methods
         private bool IsValidMovement(Vector2 destination)
         {
-            return this.map.Grid.Where(x => x.Position == destination).Single().IsPlayable;
+            IEnumerable<ICell> cell = this.map.Grid.Where(x => x.Position == destination);
+
+            if (!cell.Any())
+            {
+                return false;
+            }
+
+            return cell.Single().IsPlayable;
         }
 
         private ICell GetCellByPosition(Vector2 position)

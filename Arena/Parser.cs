@@ -40,14 +40,14 @@ namespace Arena
             return map;
         }
 
-        private static List<Cell> LineToCells(ref MapArena map, string line, int positionY)
+        private static List<ICell> LineToCells(ref MapArena map, string line, int positionY)
         {
-            List<Cell> cells = new List<Cell>();
+            List<ICell> cells = new List<ICell>();
 
             int counter = 0;
             foreach (char cellchar in line)
             {
-                Cell cell = new Cell();
+                ICell cell = new Cell();
                 cell.Position = new Vector2(counter, positionY);
 
                 switch (cellchar)

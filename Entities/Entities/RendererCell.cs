@@ -17,7 +17,7 @@ namespace Entities
             }
         }
         public Lighthouse Lighthouse { get; set; }
-        public IPlayer Player { get; set; }
+        public List<IPlayer> Players { get; set; }
         public int Energy { get; set; }
     }
 }
