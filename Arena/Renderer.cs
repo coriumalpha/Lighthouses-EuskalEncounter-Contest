@@ -23,7 +23,11 @@ namespace Arena
 
             foreach (IPlayer player in players)
             {
-                renderResult.AppendLine(String.Format("Player {0}: [{1},{2}] ({3})", player.Id, player.Position.X, player.Position.Y, player.Energy));
+                renderResult.AppendLine(String.Format("Player {0}", player.Id));
+                renderResult.AppendLine(String.Format("    Position: [{0},{1}]", player.Position.X, player.Position.Y));
+                renderResult.AppendLine(String.Format("    Energy: {0}", player.Energy));
+                renderResult.AppendLine(String.Format("    Keys: {0}", player.Keys.Count()));
+                renderResult.AppendLine(String.Format("    Lighthouses: {0}", lighthouses.Where(x => x.Owner?.Id == player.Id).Count()));
             }
 
             Console.SetCursorPosition(0, 0);
@@ -70,7 +74,7 @@ namespace Arena
 
             if (cell.Players != null && cell.Players.Any())
             {
-                return String.Format(CELLFORMAT, "<>");
+                return String.Format(CELLFORMAT, "P" + cell.Players.First().Id);
             }
 
             if (cell.IsLighthouse)

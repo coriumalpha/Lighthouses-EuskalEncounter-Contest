@@ -8,7 +8,7 @@ namespace Arena
 {
     class Program
     {
-        const int PLAYER_COUNT = 2;
+        const int PLAYER_COUNT = 8;
 
         static void Main(string[] args)
         {

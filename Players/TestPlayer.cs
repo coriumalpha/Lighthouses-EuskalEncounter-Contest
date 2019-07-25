@@ -18,8 +18,9 @@ namespace Players
         public int Score { get; set; }
         public int Energy { get; set; }
         public int MaxEnergy { get; set; }
-        public IEnumerable<string> Keys { get; set; }
-        public IEnumerable<Lighthouse> Lighthouses { get; set; }
+        public List<Vector2> Keys { get; set; }
+        public List<Lighthouse> Lighthouses { get; set; }
+        public List<Lighthouse> OwnLighthouses { get; set; }
         public Cell[] View { get; set; }
         #endregion
 
@@ -28,6 +29,8 @@ namespace Players
         public TestPlayer()
         {
             this.rand = new Random();
+            this.Keys = new List<Vector2>();
+            this.Lighthouses = new List<Lighthouse>();
         }
 
         public void Setup(PlayerConfig playerConfig)
@@ -36,15 +39,30 @@ namespace Players
             this.PlayerCount = playerConfig.PlayerCount;
             this.Position = playerConfig.Position;
             this.Map = playerConfig.Map;
-            this.Lighthouses = playerConfig.Lighthouses;
+            this.Lighthouses = playerConfig.Lighthouses.ToList();
         }
 
         public IDecision Play(ITurnState state)
         {
             IDecision decision = new Decision();
+
+            if (state.Lighthouses.Where(x => x.Position == state.Position).Any())
+            {
+                if (this.Keys.Where(x => x == state.Position).Any())
+                {
+                    if (state.Lighthouses.Where(x => x.Position == state.Position).FirstOrDefault().Owner?.Id != this.Id)
+                    {
+                        decision.Action = PlayerActions.Attack;
+                        decision.Energy = (int)Math.Floor(this.Energy / 0.8);
+
+                        return decision;
+                    }
+                }
+            }
+            
             decision.Action = PlayerActions.Move;
             decision.Target = RandomMovement();
-
+                       
             return decision;
         }
 

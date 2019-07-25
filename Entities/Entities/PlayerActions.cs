@@ -9,7 +9,6 @@ namespace Entities
         Pass,
         Move,
         Attack,
-        Charge,
         Connect
     }
 }

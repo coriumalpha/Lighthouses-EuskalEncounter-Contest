@@ -2,6 +2,7 @@
 using Helpers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -11,8 +12,14 @@ namespace Arena
 {
     public class Engine
     {
-        private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\Map1.txt";
-        private const int LIGHTHOUSES_NUM = 3;
+        private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\grid.txt";
+        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\island.txt";
+        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square.txt";
+        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square_l.txt";
+        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square_xl.txt";
+
+        private const int LOOP_WAIT_TIME = 15;
+
         private const int MAX_CELL_ENERGY = 100;
 
         private MapArena map;
@@ -22,6 +29,7 @@ namespace Arena
 
         public Engine(IEnumerable<IPlayer> players)
         {
+            this.rand = new Random();
             Setup(players);
         }
 
@@ -36,9 +44,17 @@ namespace Arena
 
         private void Turn(IPlayer player)
         {
-            ITurnState state = new TurnState();
+            ITurnState state = new TurnState()
+            {
+                Energy = player.Energy,
+                Lighthouses = this.lighthouses,
+                Position = player.Position
+            };
 
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             IDecision decision = player.Play(state);
+            sw.Stop();
 
             switch (decision.Action)
             {
@@ -46,9 +62,44 @@ namespace Arena
                 case PlayerActions.Move:
                     HandleMovement(player, decision.Target);
                     break;
+                case PlayerActions.Attack:
+                    HandleAttack(player, decision.Energy.Value);
+                    break;
             }
 
             Renderer.Render(this.map, this.players, this.lighthouses);
+        }
+
+        private void HandleAttack(IPlayer player, int energy)
+        {
+            Vector2 target = player.Position;
+
+            if (!IsLighthouse(target))
+            {
+                throw new Exception("Invalid target");
+            }
+
+            if (player.Energy < energy)
+            {
+                energy = player.Energy;
+            }
+
+            if (!player.Keys.Where(x => x == target).Any())
+            {
+                throw new Exception("Lighthouse not in keys");
+            }
+
+            Lighthouse lighthouse = this.lighthouses.Where(x => x.Position == target).Single();
+            player.Lighthouses.Add(lighthouse);
+            lighthouse.Owner = player;
+
+            if (lighthouse.Energy > energy)
+            {
+                lighthouse.Energy -= energy;
+                return;
+            }
+
+            lighthouse.Energy = energy - lighthouse.Energy;
         }
 
         private void HandleMovement(IPlayer player, Vector2 target)
@@ -57,6 +108,11 @@ namespace Arena
             if (!IsValidMovement(destination))
             {
                 throw new Exception("Invalid movement");
+            }
+
+            if (IsLighthouse(destination))
+            {
+                player.Keys.Add(destination);
             }
 
             player.Position = destination;
@@ -72,7 +128,7 @@ namespace Arena
             {
                 Turn(player);
                 //Console.ReadLine();
-                Thread.Sleep(500);
+                Thread.Sleep(LOOP_WAIT_TIME);
             }
             TurnDispatcher();
         }
@@ -134,9 +190,10 @@ namespace Arena
         #region Setup methods
         private void Setup(IEnumerable<IPlayer> players)
         {
-            this.rand = new Random();
-            this.map = Parser.LoadToMap(MAP_PATH);
-            SetupLighthouses();
+            MapDTO mapData = Parser.LoadToMap(MAP_PATH);
+
+            this.map = mapData.Map;
+            SetupLighthouses(mapData.Lighthouses);
             SetupPlayers(players);
         }
 
@@ -166,24 +223,31 @@ namespace Arena
             return config;
         }
 
-        private void SetupLighthouses()
+        private void SetupLighthouses(List<Vector2> lighthousePositions)
         {
             this.lighthouses = new List<Lighthouse>();
 
-            for (int i = 0; i < LIGHTHOUSES_NUM; i++)
+            int counter = 1;
+            foreach (Vector2 lighthousePosition in lighthousePositions)
             {
                 Lighthouse lighthouse = new Lighthouse()
                 {
-                    Id = i,
-                    Position = GetRandomPlayablePosition(),
+                    Id = counter,
+                    Position = lighthousePosition,
                 };
 
                 lighthouses.Add(lighthouse);
+                counter++;
             }
         }
         #endregion
 
         #region Helper methods
+
+        private bool IsLighthouse(Vector2 target)
+        {
+            return this.lighthouses.Where(x => x.Position == target).Any();
+        }
         private bool IsValidMovement(Vector2 destination)
         {
             IEnumerable<ICell> cell = this.map.Grid.Where(x => x.Position == destination);

@@ -16,8 +16,8 @@ namespace Entities
         int Score { get; set; }
         int Energy { get; set; }
         int MaxEnergy { get; set; }
-        IEnumerable<string> Keys { get; set; }
-        IEnumerable<Lighthouse> Lighthouses { get; set; }
+        List<Vector2> Keys { get; set; }
+        List<Lighthouse> Lighthouses { get; set; }
         Cell[] View { get; set; }
         void Setup(PlayerConfig playerConfig);
         IDecision Play(ITurnState state);
