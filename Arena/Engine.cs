@@ -11,10 +11,10 @@ namespace Arena
     public class Engine
     {
         private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\Map1.txt";
-        private const int LIGHTHOUSES_NUM = 1;
+        private const int LIGHTHOUSES_NUM = 3;
         private const int MAX_CELL_ENERGY = 100;
 
-        private Map map;
+        private MapArena map;
         private List<Lighthouse> lighthouses;
         private IEnumerable<IPlayer> players;
         private Random rand;
@@ -33,29 +33,56 @@ namespace Arena
 
         #region Private methods
 
-        private void Turn()
+        private void Turn(IPlayer player)
         {
             Console.Clear();
-            SetCellEnergy();
-            Renderer.Render(this.map);
+            ITurnState state = new TurnState();
+
+            IDecision decision = player.Play(state);
+
+            switch (decision.Action)
+            {
+                //TODO: Implement other actions
+                case PlayerActions.Move:
+                    HandleMovement(player, decision.Target);
+                    break;
+            }
+
+            Renderer.Render(this.map, this.players, this.lighthouses);
+        }
+
+        private void HandleMovement(IPlayer player, Vector2 target)
+        {
+            if (!IsValidMovement(target))
+            {
+                throw new Exception("Invalid movement");
+            }
+
+            player.Position += target;
         }
 
         private void TurnDispatcher()
         {
-            Turn();
-            Console.ReadLine();
+            SetCellEnergy();
+
+            foreach (IPlayer player in this.players)
+            {
+                Turn(player);
+                Console.ReadLine();
+            }
             TurnDispatcher();
         }
 
+        #region Turn methods
         private void SetCellEnergy()
         {
-            foreach (Cell cell in this.map.Grid)
+            foreach (ICell cell in this.map.Grid)
             {
                 UpdateCellEnergy(cell);
             }
         }
 
-        private void UpdateCellEnergy(Cell cell)
+        private void UpdateCellEnergy(ICell cell)
         {
             int maxEnergyDistance = 5;
 
@@ -75,12 +102,13 @@ namespace Arena
                 cell.Energy = 100;
             }
         }
+        #endregion
 
         #region Setup methods
         private void Setup(IEnumerable<IPlayer> players)
         {
             this.rand = new Random();
-            this.map = Parser.ConvertToMap(MAP_PATH);
+            this.map = Parser.LoadToMap(MAP_PATH);
             SetupLighthouses();
             SetupPlayers(players);
         }
@@ -124,17 +152,28 @@ namespace Arena
                 };
 
                 lighthouses.Add(lighthouse);
-                this.map.Grid.Where(x => x.Position == lighthouse.Position).Single().IsLighthouse = true;
             }
         }
         #endregion
 
+        #region Helper methods
+        private bool IsValidMovement(Vector2 destination)
+        {
+            return this.map.Grid.Where(x => x.Position == destination).Single().IsPlayable;
+        }
+
+        private ICell GetCellByPosition(Vector2 position)
+        {
+            return this.map.Grid.Where(x => x.Position == position).Single();
+        }
+
         private Vector2 GetRandomPlayablePosition()
         {
-            IEnumerable<Cell> playableCells = this.map.Grid.Where(x => x.IsPlayable);
+            IEnumerable<ICell> playableCells = this.map.Grid.Where(x => x.IsPlayable);
 
             return playableCells.ElementAt(rand.Next(playableCells.Count())).Position;
         }
+        #endregion
         #endregion
     }
 }

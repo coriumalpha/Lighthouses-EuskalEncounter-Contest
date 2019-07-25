@@ -11,7 +11,7 @@ namespace Entities
         int Id { get; set; }
         string Name { get; set; }
         int PlayerCount { get; set; }
-        Map Map { get; set; }
+        IMap Map { get; set; }
         Vector2 Position { get; set; }
         int Score { get; set; }
         int Energy { get; set; }
@@ -20,6 +20,7 @@ namespace Entities
         IEnumerable<Lighthouse> Lighthouses { get; set; }
         Cell[] View { get; set; }
         void Setup(PlayerConfig playerConfig);
+        IDecision Play(ITurnState state);
     }
 
     

@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Entities
 {
-    public class Map
+    public interface IMap
     {
-        public Vector2 Size { get; set; }
-        public List<ICell> Grid { get; set; }
+        Vector2 Size { get; set; }
+        List<ICell> Grid { get; set; }
     }
 }

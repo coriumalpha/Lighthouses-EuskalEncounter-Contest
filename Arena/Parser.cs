@@ -10,7 +10,7 @@ namespace Arena
 {
     public static class Parser
     {
-        private static Map map;
+        private static MapArena map;
         private static IEnumerable<string> GetFileLines(string filePath)
         {
             if (!File.Exists(filePath))
@@ -21,10 +21,10 @@ namespace Arena
             return File.ReadLines(filePath);
         }
 
-        public static Map ConvertToMap(string filePath)
+        public static MapArena LoadToMap(string filePath)
         {
             IEnumerable<string> lines = GetFileLines(filePath).Reverse();
-            List<Cell> cells = new List<Cell>();
+            List<ICell> cells = new List<ICell>();
 
             int counter = 0;
             foreach (string line in lines)
@@ -35,12 +35,12 @@ namespace Arena
 
             int sizeX = lines.First().Length;
             int sizeY = lines.Count();
-            Parser.map = new Map(new Vector2(sizeX, sizeY), cells);
+            Parser.map = new MapArena(new Vector2(sizeX, sizeY), cells);
 
             return map;
         }
 
-        private static List<Cell> LineToCells(ref Map map, string line, int positionY)
+        private static List<Cell> LineToCells(ref MapArena map, string line, int positionY)
         {
             List<Cell> cells = new List<Cell>();
 
