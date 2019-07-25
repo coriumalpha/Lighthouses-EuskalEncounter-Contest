@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,17 +8,18 @@ using System.Text;
 
 namespace Arena
 {
-    class Game
+    public class Engine
     {
         private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\Map1.txt";
-        private const int LIGHTHOUSES_NUM = 3;
+        private const int LIGHTHOUSES_NUM = 1;
+        private const int MAX_CELL_ENERGY = 100;
 
         private Map map;
         private List<Lighthouse> lighthouses;
         private IEnumerable<IPlayer> players;
         private Random rand;
 
-        public Game(IEnumerable<IPlayer> players)
+        public Engine(IEnumerable<IPlayer> players)
         {
             Setup(players);
         }
@@ -25,13 +27,56 @@ namespace Arena
         #region Public methods
         public void Start()
         {
-            Renderer.Render(this.map);
-            Console.ReadLine();
+            TurnDispatcher();
         }
         #endregion
 
         #region Private methods
 
+        private void Turn()
+        {
+            Console.Clear();
+            SetCellEnergy();
+            Renderer.Render(this.map);
+        }
+
+        private void TurnDispatcher()
+        {
+            Turn();
+            Console.ReadLine();
+            TurnDispatcher();
+        }
+
+        private void SetCellEnergy()
+        {
+            foreach (Cell cell in this.map.Grid)
+            {
+                UpdateCellEnergy(cell);
+            }
+        }
+
+        private void UpdateCellEnergy(Cell cell)
+        {
+            int maxEnergyDistance = 5;
+
+            if (cell.Energy == MAX_CELL_ENERGY)
+            {
+                return;
+            }
+
+            IEnumerable<Lighthouse> lighthousesInRange = this.lighthouses.Where(x => Geometry.Distance(cell.Position, x.Position) <= maxEnergyDistance);
+            foreach (Lighthouse lighthouse in lighthousesInRange)
+            {
+                 cell.Energy += (int)Math.Floor(maxEnergyDistance - Geometry.Distance(cell.Position, lighthouse.Position));
+            }
+
+            if (cell.Energy > MAX_CELL_ENERGY)
+            {
+                cell.Energy = 100;
+            }
+        }
+
+        #region Setup methods
         private void Setup(IEnumerable<IPlayer> players)
         {
             this.rand = new Random();
@@ -79,13 +124,14 @@ namespace Arena
                 };
 
                 lighthouses.Add(lighthouse);
+                this.map.Grid.Where(x => x.Position == lighthouse.Position).Single().IsLighthouse = true;
             }
         }
+        #endregion
 
         private Vector2 GetRandomPlayablePosition()
         {
-            IEnumerable<Cell> playableCells = this.map.Grid
-                .Where(x => x.Playable == true);
+            IEnumerable<Cell> playableCells = this.map.Grid.Where(x => x.IsPlayable);
 
             return playableCells.ElementAt(rand.Next(playableCells.Count())).Position;
         }

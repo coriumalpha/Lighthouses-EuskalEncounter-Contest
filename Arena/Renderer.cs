@@ -9,6 +9,7 @@ namespace Arena
     public static class Renderer
     {
         private const string CELLFORMAT = " {0} ";
+        private const int MAX_CELL_ENERGY = 100; //TODO: Add to config
         public static void Render(Map map)
         {
             Console.Write(RenderMap(map));
@@ -16,9 +17,19 @@ namespace Arena
 
         private static string RenderCell(Cell cell)
         {
-            if (!cell.Playable)
+            if (!cell.IsPlayable)
             {
                 return String.Format(CELLFORMAT, "##");
+            }
+
+            if (cell.Energy == MAX_CELL_ENERGY)
+            {
+                return String.Format(CELLFORMAT, "++");
+            }
+
+            if (cell.IsLighthouse)
+            {
+                return String.Format(CELLFORMAT, "||");
             }
 
             return String.Format(CELLFORMAT, cell.Energy.ToString("00"));

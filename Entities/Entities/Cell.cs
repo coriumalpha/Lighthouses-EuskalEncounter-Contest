@@ -5,11 +5,11 @@ using System.Text;
 
 namespace Entities
 {
-    public struct Cell
+    public class Cell
     {
-        const int MAX_ENERGY = 100;
         public Vector2 Position { get; set; }
-        public bool Playable { get; set; }
+        public bool IsPlayable { get; set; }
+        public bool IsLighthouse { get; set; } = false;
         public int Energy { get; set; }
     }
 }

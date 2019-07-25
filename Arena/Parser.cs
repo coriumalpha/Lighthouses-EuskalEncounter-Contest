@@ -53,13 +53,13 @@ namespace Arena
                 switch (cellchar)
                 {
                     case '#':
-                        cell.Playable = false;
+                        cell.IsPlayable = false;
                         break;
                     case '!':
-                        cell.Playable = true;
+                        cell.IsPlayable = true;
                         break;
                     default:
-                        cell.Playable = true;
+                        cell.IsPlayable = true;
                         break;
                 }
 

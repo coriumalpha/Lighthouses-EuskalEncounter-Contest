@@ -20,7 +20,7 @@ namespace Arena
                 players.Add(player);
             }
 
-            Game game = new Game(players);
+            Engine game = new Engine(players);
             game.Start();
         }
     }
