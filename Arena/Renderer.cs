@@ -6,15 +6,15 @@ using System.Text;
 
 namespace Arena
 {
-    public class Renderer
+    public static class Renderer
     {
-        const string CELLFORMAT = " {0} ";
-        public void Render(Map map)
+        private const string CELLFORMAT = " {0} ";
+        public static void Render(Map map)
         {
             Console.Write(RenderMap(map));
         }
 
-        private string RenderCell(Cell cell)
+        private static string RenderCell(Cell cell)
         {
             if (!cell.Playable)
             {
@@ -24,7 +24,7 @@ namespace Arena
             return String.Format(CELLFORMAT, cell.Energy.ToString("00"));
         }
 
-        private string RenderRow(Cell[] row)
+        private static string RenderRow(Cell[] row)
         {
             StringBuilder strRow = new StringBuilder();
             foreach (Cell cell in row)
@@ -34,7 +34,7 @@ namespace Arena
             return strRow.ToString();
         }
 
-        private string RenderMap(Map map)
+        private static string RenderMap(Map map)
         {
             StringBuilder strMap = new StringBuilder();
 

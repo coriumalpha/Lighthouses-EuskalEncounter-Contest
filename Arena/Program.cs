@@ -1,17 +1,27 @@
 ﻿using Entities;
+using Players;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Arena
 {
     class Program
     {
+        const int PLAYER_COUNT = 2;
+
         static void Main(string[] args)
         {
-            Map map = Parser.ConvertToMap(@"C:\Users\Corium\Desktop\LSMaterial\Map1.txt");
-            Renderer renderer = new Renderer();
-            renderer.Render(map);
-            Console.Read();
+            List<IPlayer> players = new List<IPlayer>();
+
+            for (int i = 0; i < PLAYER_COUNT; i++)
+            {
+                IPlayer player = new TestPlayer();
+                players.Add(player);
+            }
+
+            Game game = new Game(players);
+            game.Start();
         }
     }
 }

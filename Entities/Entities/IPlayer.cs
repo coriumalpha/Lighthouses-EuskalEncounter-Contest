@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Entities
@@ -9,20 +10,17 @@ namespace Entities
     {
         int Id { get; set; }
         string Name { get; set; }
-        Cell Position { get; set; }
+        int PlayerCount { get; set; }
+        Map Map { get; set; }
+        Vector2 Position { get; set; }
         int Score { get; set; }
         int Energy { get; set; }
         int MaxEnergy { get; set; }
-        HashSet<Lighthouse> Keys { get; set; }
+        IEnumerable<string> Keys { get; set; }
+        IEnumerable<Lighthouse> Lighthouses { get; set; }
         Cell[] View { get; set; }
+        void Setup(PlayerConfig playerConfig);
     }
 
-    public enum PlayerActions
-    {
-        Pass,
-        Move,
-        Attack,
-        Charge,
-        Connect
-    }
+    
 }
