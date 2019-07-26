@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Entities;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
-namespace Entities
+namespace Arena
 {
     public class RendererCell : ICell
     {
@@ -17,7 +18,7 @@ namespace Entities
             }
         }
         public Lighthouse Lighthouse { get; set; }
-        public List<IPlayer> Players { get; set; }
+        public List<ArenaPlayer> Players { get; set; }
         public int Energy { get; set; }
     }
 }

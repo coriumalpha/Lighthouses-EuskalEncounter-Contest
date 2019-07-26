@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Entities;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
 namespace Entities
 {
-    public interface ITurnState
+    public interface ILighthouse
     {
         Vector2 Position { get; set; }
-        int Score { get; set; }
         int Energy { get; set; }
-        Map View { get; set; } 
-        IEnumerable<ILighthouse> Lighthouses { get; set; }
+        int? IdOwner { get; }
     }
 }

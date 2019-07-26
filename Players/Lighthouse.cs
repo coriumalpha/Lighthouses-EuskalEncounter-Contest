@@ -4,14 +4,13 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
-namespace Entities
+namespace Players
 {
-    public class TurnState : ITurnState
+    public class Lighthouse : ILighthouse
     {
         public Vector2 Position { get; set; }
-        public int Score { get; set; }
+        public int? IdOwner { get; set; }
         public int Energy { get; set; }
-        public Map View { get; set; }
-        public List<Lighthouse> Lighthouses { get; set; }
+        public ICollection<Lighthouse> Connections { get; set; }
     }
 }

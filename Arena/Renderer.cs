@@ -11,7 +11,7 @@ namespace Arena
         private const string CELLFORMAT = " {0} ";
         private const int MAX_CELL_ENERGY = 100; //TODO: Add to config
 
-        public static void Render(MapArena map, IEnumerable<IPlayer> players, IEnumerable<Lighthouse> lighthouses)
+        public static void Render(MapArena map, IEnumerable<ArenaPlayer> players, IEnumerable<Lighthouse> lighthouses)
         {
             SetRenderGrid(ref map);
             SetPlayers(ref map, players);
@@ -21,7 +21,7 @@ namespace Arena
 
             renderResult.AppendLine();
 
-            foreach (IPlayer player in players)
+            foreach (ArenaPlayer player in players)
             {
                 renderResult.AppendLine(String.Format("Player {0}", player.Id));
                 renderResult.AppendLine(String.Format("    Position: [{0},{1}]", player.Position.X, player.Position.Y));
@@ -43,15 +43,15 @@ namespace Arena
             map.RenderGrid = cells.ToList();
         }
 
-        private static void SetPlayers(ref MapArena map, IEnumerable<IPlayer> players)
+        private static void SetPlayers(ref MapArena map, IEnumerable<ArenaPlayer> players)
         {
-            foreach (IPlayer player in players)
+            foreach (ArenaPlayer player in players)
             {
                 RendererCell cell = map.RenderGrid.Where(x => x.Position == player.Position).Single();
 
                 if (cell.Players == null)
                 {
-                    cell.Players = new List<IPlayer>();
+                    cell.Players = new List<ArenaPlayer>();
                 }
                 cell.Players.Add(player);
             }
@@ -69,22 +69,22 @@ namespace Arena
         {
             if (!cell.IsPlayable)
             {
-                return String.Format(CELLFORMAT, "··");
+                return String.Format(CELLFORMAT, "  ");
             }
 
             if (cell.Players != null && cell.Players.Any())
             {
-                return String.Format(CELLFORMAT, "P" + cell.Players.First().Id);
+                return String.Format("<{0}>", "P" + cell.Players.First().Id);
             }
 
             if (cell.IsLighthouse)
             {
-                return String.Format(CELLFORMAT, "[]");
+                return "[[]]";
             }
 
             if (cell.Energy == MAX_CELL_ENERGY)
             {
-                return String.Format(CELLFORMAT, "++");
+                return String.Format(CELLFORMAT, "··");
             }
 
             return String.Format(CELLFORMAT, cell.Energy.ToString("00"));

@@ -12,19 +12,19 @@ namespace Arena
 {
     public class Engine
     {
-        private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\grid.txt";
+        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\grid.txt";
         //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\island.txt";
-        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square.txt";
+        private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square.txt";
         //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square_l.txt";
         //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square_xl.txt";
 
-        private const int LOOP_WAIT_TIME = 15;
+        private const int LOOP_WAIT_TIME = 75;
 
         private const int MAX_CELL_ENERGY = 100;
 
         private MapArena map;
         private List<Lighthouse> lighthouses;
-        private IEnumerable<IPlayer> players;
+        private IEnumerable<ArenaPlayer> players;
         private Random rand;
 
         public Engine(IEnumerable<IPlayer> players)
@@ -42,7 +42,7 @@ namespace Arena
 
         #region Private methods
 
-        private void Turn(IPlayer player)
+        private void Turn(ArenaPlayer player)
         {
             ITurnState state = new TurnState()
             {
@@ -51,10 +51,7 @@ namespace Arena
                 Position = player.Position
             };
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
             IDecision decision = player.Play(state);
-            sw.Stop();
 
             switch (decision.Action)
             {
@@ -70,7 +67,7 @@ namespace Arena
             Renderer.Render(this.map, this.players, this.lighthouses);
         }
 
-        private void HandleAttack(IPlayer player, int energy)
+        private void HandleAttack(ArenaPlayer player, int energy)
         {
             Vector2 target = player.Position;
 
@@ -102,7 +99,7 @@ namespace Arena
             lighthouse.Energy = energy - lighthouse.Energy;
         }
 
-        private void HandleMovement(IPlayer player, Vector2 target)
+        private void HandleMovement(ArenaPlayer player, Vector2 target)
         {
             Vector2 destination = player.Position + target;
             if (!IsValidMovement(destination))
@@ -124,7 +121,7 @@ namespace Arena
             SetPlayerEnergy();
             RemoveConsumedEnergy();
 
-            foreach (IPlayer player in this.players)
+            foreach (ArenaPlayer player in this.players)
             {
                 Turn(player);
                 //Console.ReadLine();
@@ -136,7 +133,7 @@ namespace Arena
         #region Turn methods
         private void RemoveConsumedEnergy()
         {
-            foreach (IPlayer player in this.players)
+            foreach (ArenaPlayer player in this.players)
             {
                 this.map.Grid.Where(x => x.Position == player.Position).Single().Energy = 0;
             }
@@ -144,7 +141,7 @@ namespace Arena
 
         private void SetPlayerEnergy()
         {
-            foreach (IPlayer player in this.players)
+            foreach (ArenaPlayer player in this.players)
             {
                 int cellEnergy = this.map.Grid.Where(x => x.Position == player.Position).Single().Energy;
 
@@ -199,25 +196,35 @@ namespace Arena
 
         private void SetupPlayers(IEnumerable<IPlayer> players)
         {
-            this.players = players;
+            List<ArenaPlayer> playerList = new List<ArenaPlayer>();
 
             int counter = 0;
             foreach (IPlayer player in players)
             {
-                player.Setup(CreatePlayerConfig(counter));
+                ArenaPlayer arenaPlayer = new ArenaPlayer();
+
+                PlayerConfig playerConfig = CreatePlayerConfig(counter, player, players.Count());
+
+                arenaPlayer.Setup(playerConfig);
+                player.Setup(playerConfig);
+
+                playerList.Add(arenaPlayer);
                 counter++;
             }
+
+            this.players = playerList;
         }
 
-        private PlayerConfig CreatePlayerConfig(int id)
+        private PlayerConfig CreatePlayerConfig(int id, IPlayer playerPCI, int playerCount)
         {
             PlayerConfig config = new PlayerConfig()
             {
                 Id = id,
-                Lighthouses = this.lighthouses,
+                Lighthouses = this.lighthouses.Select(x => x.Position),
                 Map = this.map,
-                PlayerCount = players.Count(),
-                Position = GetRandomPlayablePosition()
+                PlayerCount = playerCount,
+                Position = GetRandomPlayablePosition(),
+                PlayerDCI = playerPCI
             };
 
             return config;
@@ -227,17 +234,14 @@ namespace Arena
         {
             this.lighthouses = new List<Lighthouse>();
 
-            int counter = 1;
             foreach (Vector2 lighthousePosition in lighthousePositions)
             {
                 Lighthouse lighthouse = new Lighthouse()
                 {
-                    Id = counter,
                     Position = lighthousePosition,
                 };
 
                 lighthouses.Add(lighthouse);
-                counter++;
             }
         }
         #endregion

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
-namespace Entities
+namespace Helpers.Models
 {
     public struct Line
     {

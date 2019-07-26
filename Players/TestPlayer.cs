@@ -33,24 +33,26 @@ namespace Players
             this.Lighthouses = new List<Lighthouse>();
         }
 
-        public void Setup(PlayerConfig playerConfig)
+        public void Setup(IPlayerConfig playerConfig)
         {
             this.Id = playerConfig.Id;
             this.PlayerCount = playerConfig.PlayerCount;
             this.Position = playerConfig.Position;
             this.Map = playerConfig.Map;
-            this.Lighthouses = playerConfig.Lighthouses.ToList();
+            this.Lighthouses = playerConfig.Lighthouses.Select(x => new Lighthouse() { Position = x }).ToList();
         }
 
         public IDecision Play(ITurnState state)
         {
+            UpdatePlayerState(state);
+
             IDecision decision = new Decision();
 
             if (state.Lighthouses.Where(x => x.Position == state.Position).Any())
             {
                 if (this.Keys.Where(x => x == state.Position).Any())
                 {
-                    if (state.Lighthouses.Where(x => x.Position == state.Position).FirstOrDefault().Owner?.Id != this.Id)
+                    if (state.Lighthouses.Where(x => x.Position == state.Position).FirstOrDefault().IdOwner != this.Id)
                     {
                         decision.Action = PlayerActions.Attack;
                         decision.Energy = (int)Math.Floor(this.Energy / 0.8);
@@ -64,6 +66,12 @@ namespace Players
             decision.Target = RandomMovement();
                        
             return decision;
+        }
+
+        private void UpdatePlayerState(ITurnState state)
+        {
+            this.Position = state.Position;
+            this.Lighthouses = state.Lighthouses.Select(x => new Lighthouse() { Position = x.Position, Energy = x.Energy, IdOwner = x.IdOwner }).ToList();
         }
 
         private Vector2 RandomMovement()
