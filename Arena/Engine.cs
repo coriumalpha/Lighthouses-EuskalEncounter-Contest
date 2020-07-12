@@ -12,13 +12,9 @@ namespace Arena
 {
     public class Engine
     {
-        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\grid.txt";
-        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\island.txt";
-        private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square.txt";
-        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square_l.txt";
-        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\LSMaterial\square_xl.txt";
+        private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\test.txt";
 
-        private const int LOOP_WAIT_TIME = 75;
+        private const int LOOP_WAIT_TIME = 50;
 
         private const int MAX_CELL_ENERGY = 100;
 
@@ -62,6 +58,9 @@ namespace Arena
                 case PlayerActions.Attack:
                     HandleAttack(player, decision.Energy.Value);
                     break;
+                //case PlayerActions.Connect:
+                //    HandleConnect(player, decision.Target);
+                //    break;
             }
 
             Renderer.Render(this.map, this.players, this.lighthouses);
@@ -102,7 +101,7 @@ namespace Arena
         private void HandleMovement(ArenaPlayer player, Vector2 target)
         {
             Vector2 destination = player.Position + target;
-            if (!IsValidMovement(destination))
+            if (!(GameLogic.IsValidMovement(destination, map.Grid)))
             {
                 throw new Exception("Invalid movement");
             }
@@ -171,10 +170,10 @@ namespace Arena
                 return;
             }
 
-            IEnumerable<Lighthouse> lighthousesInRange = this.lighthouses.Where(x => Geometry.Distance(cell.Position, x.Position) <= maxEnergyDistance);
+            IEnumerable<Lighthouse> lighthousesInRange = this.lighthouses.Where(x => Vector2.Distance(cell.Position, x.Position) <= maxEnergyDistance);
             foreach (Lighthouse lighthouse in lighthousesInRange)
             {
-                 cell.Energy += (int)Math.Floor(maxEnergyDistance - Geometry.Distance(cell.Position, lighthouse.Position));
+                 cell.Energy += (int)Math.Floor(maxEnergyDistance - Vector2.Distance(cell.Position, lighthouse.Position));
             }
 
             if (cell.Energy > MAX_CELL_ENERGY)
@@ -252,18 +251,7 @@ namespace Arena
         {
             return this.lighthouses.Where(x => x.Position == target).Any();
         }
-        private bool IsValidMovement(Vector2 destination)
-        {
-            IEnumerable<ICell> cell = this.map.Grid.Where(x => x.Position == destination);
-
-            if (!cell.Any())
-            {
-                return false;
-            }
-
-            return cell.Single().IsPlayable;
-        }
-
+      
         private ICell GetCellByPosition(Vector2 position)
         {
             return this.map.Grid.Where(x => x.Position == position).Single();

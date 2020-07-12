@@ -9,11 +9,6 @@ namespace Helpers
 {
     public static class Geometry
     {
-        public static double Distance(Vector2 a, Vector2 b)
-        {
-            return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
-        }
-
         public static double Orient2D(Vector2 a, Vector2 b, Vector2 c)
         {
             return (b.X - a.X) * (c.Y - a.Y) - (c.X - a.X) * (b.Y - a.Y);

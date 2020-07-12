@@ -23,7 +23,7 @@ namespace Arena
 
             foreach (ArenaPlayer player in players)
             {
-                renderResult.AppendLine(String.Format("Player {0}", player.Id));
+                renderResult.AppendLine(String.Format("Player {0} {1}", player.Id, player.Name));
                 renderResult.AppendLine(String.Format("    Position: [{0},{1}]", player.Position.X, player.Position.Y));
                 renderResult.AppendLine(String.Format("    Energy: {0}", player.Energy));
                 renderResult.AppendLine(String.Format("    Keys: {0}", player.Keys.Count()));
@@ -84,7 +84,7 @@ namespace Arena
 
             if (cell.Energy == MAX_CELL_ENERGY)
             {
-                return String.Format(CELLFORMAT, "··");
+                return String.Format(CELLFORMAT, "++");
             }
 
             return String.Format(CELLFORMAT, cell.Energy.ToString("00"));

@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,24 +84,12 @@ namespace Players
             }
 
             Vector2 target = this.Position + move;
-            if (!IsValidMovement(target))
+            if (!GameLogic.IsValidMovement(target, this.Map.Grid))
             {
                 return RandomMovement();
             }
 
             return move;
-        }
-
-        private bool IsValidMovement(Vector2 destination)
-        {
-            IEnumerable<ICell> cell = this.Map.Grid.Where(x => x.Position == destination);
-
-            if (!cell.Any())
-            {
-                return false;
-            }
-
-            return cell.Single().IsPlayable;
         }
     }
 }
