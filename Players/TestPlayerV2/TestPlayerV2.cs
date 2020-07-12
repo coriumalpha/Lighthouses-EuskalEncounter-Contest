@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,11 +75,14 @@ namespace Players.TestPlayerV2
 
             if (destination == null || state.Position == destination)
             {
-                route = BestRoute(state.Position, out destination);
+                this.route = BestRoute(state.Position, out destination);
             }
 
             decision.Action = PlayerActions.Move;
-            decision.Target = NextStep(state.Position, route, true);
+
+            Vector2 targetStep = NextStep(state.Position, route, true);
+
+            decision.Target = targetStep;
                        
             return decision;
         }
@@ -194,44 +198,49 @@ namespace Players.TestPlayerV2
 
         private Vector2 NextStep(Vector2 origin, Route route, bool energyPonderated = false)
         {
-            List<ICell> remainingWay = route.Way.Where(x => !(route.TraveledWay.Any(tw => tw.Position == x.Position))).ToList();
-            Vector2 stepDestination = Step(origin, remainingWay.First().Position);
-
-            if (route.Way.Any(x => x.Position == origin))
-            {
-                route.TraveledWay.Add(route.Way.Single(x => x.Position == origin));
-            }
-
+            ICell nextWaypoint = route.RemainingWay.First();
+            
             if (energyPonderated)
             {
-                Vector2 energyPonderatedStep = EnergyPonderatedStep(origin, stepDestination, route);
-                return energyPonderatedStep;
+                nextWaypoint = EnergyPonderatedDestination(origin, nextWaypoint, route);
             }
 
-            return stepDestination;
-        }
+            Vector2 step = Step(origin, nextWaypoint.Position);
 
-        private Vector2 EnergyPonderatedStep(Vector2 origin, Vector2 step, Route route)
-        {
-            IEnumerable<ICell> closeCells = this.Map.Grid.Where(x => Vector2.Distance(origin, x.Position) <= MAX_STEP_DISTANCE && x.IsPlayable);
-            ICell maxEnergy = closeCells.OrderByDescending(x => x.Energy).Take(1).Single();
-            ICell stepDestination = FromVector2(Vector2.Add(step, origin));
-
-            if (step == maxEnergy.Position)
+            if (!GameLogic.IsValidStep(origin, step, this.Map.Grid))
             {
-                return step;
+                throw new Exception("Invalid movement request");
             }
 
-            double energyDifference = (maxEnergy.Energy - stepDestination.Energy);
-            if (energyDifference > MIN_ALTER_ROUTE_ENERGY_DIFFERENCE)
-            {
-                //Escaped route way, recalc route
-                route = TraceRoute(maxEnergy.Position, route.Destination.Position);
-                //route.TraveledWay.Add(maxEnergy);
-                return Step(origin, maxEnergy.Position);
-            }
+            RegisterStep(nextWaypoint);
 
             return step;
+        }
+
+        private ICell EnergyPonderatedDestination(Vector2 origin, ICell defaultNextWaypoing, Route route)
+        {
+            IEnumerable<ICell> closeCells = this.Map.Grid.Where(x => Vector2.Distance(origin, x.Position) <= MAX_STEP_DISTANCE && x.IsPlayable);
+            ICell maxEnergy = closeCells.OrderByDescending(x => x.Energy).First();
+
+            if (defaultNextWaypoing.Position == maxEnergy.Position)
+            {
+                return defaultNextWaypoing;
+            }
+
+            double energyDifference = (maxEnergy.Energy - defaultNextWaypoing.Energy);
+            if (energyDifference > MIN_ALTER_ROUTE_ENERGY_DIFFERENCE)
+            {
+                this.route = TraceRoute(maxEnergy.Position, route.Destination.Position);
+
+                return maxEnergy;
+            }
+
+            return defaultNextWaypoing;
+        }
+
+        private void RegisterStep(ICell stepped)
+        {
+            this.route.TraveledWay.Add(stepped);
         }
 
         private Vector2 Step(Vector2 origin, Vector2 destination)

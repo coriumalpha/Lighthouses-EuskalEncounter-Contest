@@ -90,9 +90,12 @@ namespace Arena
             return String.Format(CELLFORMAT, cell.Energy.ToString("00"));
         }
 
-        private static string RenderRow(RendererCell[] row)
+        private static string RenderRow(RendererCell[] row, int rowNumber)
         {
             StringBuilder strRow = new StringBuilder();
+
+            strRow.Append(String.Format(CELLFORMAT, rowNumber.ToString("00")));
+
             foreach (RendererCell cell in row)
             {
                 strRow.Append(RenderCell(cell));
@@ -103,11 +106,19 @@ namespace Arena
         private static StringBuilder RenderMap(MapArena map)
         {
             StringBuilder strMap = new StringBuilder();
+            string scaleX = String.Format(CELLFORMAT, "XX");
+
+            for (int i = 0; i < map.Size.X; i++)
+            {
+                scaleX += String.Format(CELLFORMAT, i.ToString("00"));
+            }
+
+            strMap.AppendLine(scaleX);
 
             for (int i = 0; i < map.Size.Y; i++)
             {
                 RendererCell[] row = map.RenderGrid.Where(c => c.Position.Y == i).ToArray();
-                strMap.AppendLine(RenderRow(row));
+                strMap.AppendLine(RenderRow(row, i));
             }
             return strMap;
         }

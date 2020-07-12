@@ -14,7 +14,7 @@ namespace Arena
     {
         private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\test.txt";
 
-        private const int LOOP_WAIT_TIME = 50;
+        private const int LOOP_WAIT_TIME = 10;
 
         private const int MAX_CELL_ENERGY = 100;
 
@@ -51,7 +51,6 @@ namespace Arena
 
             switch (decision.Action)
             {
-                //TODO: Implement other actions
                 case PlayerActions.Move:
                     HandleMovement(player, decision.Target);
                     break;
@@ -60,6 +59,9 @@ namespace Arena
                     break;
                 //case PlayerActions.Connect:
                 //    HandleConnect(player, decision.Target);
+                //    break;
+                //case PlayerActions.Pass:
+                //    HandlePass(player);
                 //    break;
             }
 
@@ -123,7 +125,6 @@ namespace Arena
             foreach (ArenaPlayer player in this.players)
             {
                 Turn(player);
-                //Console.ReadLine();
                 Thread.Sleep(LOOP_WAIT_TIME);
             }
             TurnDispatcher();
