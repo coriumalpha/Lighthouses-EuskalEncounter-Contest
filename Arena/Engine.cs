@@ -14,12 +14,13 @@ namespace Arena
     {
         private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\test.txt";
 
-        private const int LOOP_WAIT_TIME = 10;
+        private const int LOOP_WAIT_TIME = 40;
 
         private const int MAX_CELL_ENERGY = 100;
+        private const int LIGHTHOUSE_ENERGY_LOST_PER_TURN = 10;
 
         private MapArena map;
-        private List<Lighthouse> lighthouses;
+        private List<Lighthouse> _lighthouses;
         private IEnumerable<ArenaPlayer> players;
         private Random rand;
 
@@ -43,7 +44,7 @@ namespace Arena
             ITurnState state = new TurnState()
             {
                 Energy = player.Energy,
-                Lighthouses = this.lighthouses,
+                Lighthouses = this._lighthouses,
                 Position = player.Position
             };
 
@@ -65,7 +66,7 @@ namespace Arena
                 //    break;
             }
 
-            Renderer.Render(this.map, this.players, this.lighthouses);
+            Renderer.Render(this.map, this.players, this._lighthouses);
         }
 
         private void HandleAttack(ArenaPlayer player, int energy)
@@ -82,22 +83,21 @@ namespace Arena
                 energy = player.Energy;
             }
 
-            if (!player.Keys.Where(x => x == target).Any())
+            Lighthouse lighthouse = this._lighthouses.Where(x => x.Position == target).Single();
+
+            if (energy > lighthouse.Energy)
             {
-                throw new Exception("Lighthouse not in keys");
+                if (players.Where(x => x.Lighthouses.Contains(lighthouse)).Any())
+                {
+                    ArenaPlayer oldOwner = players.Where(x => x.Lighthouses.Contains(lighthouse)).Single();
+                    oldOwner.Lighthouses.Remove(lighthouse);
+                }
+                player.Lighthouses.Add(lighthouse);
+                lighthouse.Owner = player;
             }
 
-            Lighthouse lighthouse = this.lighthouses.Where(x => x.Position == target).Single();
-            player.Lighthouses.Add(lighthouse);
-            lighthouse.Owner = player;
-
-            if (lighthouse.Energy > energy)
-            {
-                lighthouse.Energy -= energy;
-                return;
-            }
-
-            lighthouse.Energy = energy - lighthouse.Energy;
+            player.Energy = player.Energy - energy;
+            lighthouse.Energy = Math.Abs(lighthouse.Energy - energy);
         }
 
         private void HandleMovement(ArenaPlayer player, Vector2 target)
@@ -120,7 +120,8 @@ namespace Arena
         {
             SetCellEnergy();
             SetPlayerEnergy();
-            RemoveConsumedEnergy();
+            UpdateLighthousesEnergy();
+            RemoveConsumedEnergyFromCells();
 
             foreach (ArenaPlayer player in this.players)
             {
@@ -131,7 +132,22 @@ namespace Arena
         }
 
         #region Turn methods
-        private void RemoveConsumedEnergy()
+        private void UpdateLighthousesEnergy()
+        {
+            IEnumerable<Lighthouse> energyzedLighthouses = _lighthouses.Where(x => x.Energy > 0);
+            foreach (Lighthouse lighthouse in energyzedLighthouses)
+            {
+                if (lighthouse.Energy > LIGHTHOUSE_ENERGY_LOST_PER_TURN)
+                {
+                    lighthouse.Energy = lighthouse.Energy - LIGHTHOUSE_ENERGY_LOST_PER_TURN;
+                    continue;
+                }
+
+                lighthouse.Energy = 0;
+            }
+        }
+
+        private void RemoveConsumedEnergyFromCells()
         {
             foreach (ArenaPlayer player in this.players)
             {
@@ -171,7 +187,7 @@ namespace Arena
                 return;
             }
 
-            IEnumerable<Lighthouse> lighthousesInRange = this.lighthouses.Where(x => Vector2.Distance(cell.Position, x.Position) <= maxEnergyDistance);
+            IEnumerable<Lighthouse> lighthousesInRange = this._lighthouses.Where(x => Vector2.Distance(cell.Position, x.Position) <= maxEnergyDistance);
             foreach (Lighthouse lighthouse in lighthousesInRange)
             {
                  cell.Energy += (int)Math.Floor(maxEnergyDistance - Vector2.Distance(cell.Position, lighthouse.Position));
@@ -201,7 +217,7 @@ namespace Arena
             int counter = 0;
             foreach (IPlayer player in players)
             {
-                ArenaPlayer arenaPlayer = new ArenaPlayer();
+                ArenaPlayer arenaPlayer = new ArenaPlayer(player.Name);
 
                 PlayerConfig playerConfig = CreatePlayerConfig(counter, player, players.Count());
 
@@ -220,7 +236,7 @@ namespace Arena
             PlayerConfig config = new PlayerConfig()
             {
                 Id = id,
-                Lighthouses = this.lighthouses.Select(x => x.Position),
+                Lighthouses = this._lighthouses.Select(x => x.Position),
                 Map = this.map,
                 PlayerCount = playerCount,
                 Position = GetRandomPlayablePosition(),
@@ -232,7 +248,7 @@ namespace Arena
 
         private void SetupLighthouses(List<Vector2> lighthousePositions)
         {
-            this.lighthouses = new List<Lighthouse>();
+            this._lighthouses = new List<Lighthouse>();
 
             foreach (Vector2 lighthousePosition in lighthousePositions)
             {
@@ -241,7 +257,7 @@ namespace Arena
                     Position = lighthousePosition,
                 };
 
-                lighthouses.Add(lighthouse);
+                _lighthouses.Add(lighthouse);
             }
         }
         #endregion
@@ -250,7 +266,7 @@ namespace Arena
 
         private bool IsLighthouse(Vector2 target)
         {
-            return this.lighthouses.Where(x => x.Position == target).Any();
+            return this._lighthouses.Where(x => x.Position == target).Any();
         }
       
         private ICell GetCellByPosition(Vector2 position)

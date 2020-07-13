@@ -22,9 +22,10 @@ namespace Arena
         public List<Lighthouse> Lighthouses { get; set; }
         public Cell[] View { get; set; }
 
-        public ArenaPlayer()
+        public ArenaPlayer(string name = "")
         {
             this.Keys = new List<Vector2>();
+            this.Name = name;
         }
 
         public IDecision Play(ITurnState state)

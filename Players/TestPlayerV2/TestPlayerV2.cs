@@ -12,7 +12,9 @@ namespace Players.TestPlayerV2
     public class TestPlayerV2 : IPlayer
     {
         private const int MAX_CELL_ENERGY = 100;
-        private const int MIN_ALTER_ROUTE_ENERGY_DIFFERENCE = 85;
+        private const int MIN_ALTER_ROUTE_ENERGY_DIFFERENCE = 80;
+        private const double MAX_ENERGY_CONSUMPTION_COEFFICIENT = 0.45;
+        private const double ENERGY_INCREMENT = 0.15;
 
         private readonly double MAX_STEP_DISTANCE;
 
@@ -34,14 +36,16 @@ namespace Players.TestPlayerV2
         private Random rand;
         private Vector2? destination = null;
         private Route route;
+        private bool energyOptimization;
 
-        public TestPlayerV2(string name = "")
+        public TestPlayerV2(string name = "", bool energyOptimization = true)
         {
             this.MAX_STEP_DISTANCE = Vector2.Distance(new Vector2(0, 0), new Vector2(1, 1));
             this.Name = name;
             this.rand = new Random();
             this.Keys = new List<Vector2>();
             this.Lighthouses = new List<Lighthouse>();
+            this.energyOptimization = energyOptimization;
         }
 
         public void Setup(IPlayerConfig playerConfig)
@@ -59,18 +63,9 @@ namespace Players.TestPlayerV2
 
             IDecision decision = new Decision();
 
-            if (state.Lighthouses.Where(x => x.Position == state.Position).Any())
+            if (AttackLighthouse(decision))
             {
-                if (this.Keys.Where(x => x == state.Position).Any())
-                {
-                    if (state.Lighthouses.Where(x => x.Position == state.Position).FirstOrDefault().IdOwner != this.Id)
-                    {
-                        decision.Action = PlayerActions.Attack;
-                        decision.Energy = (int)Math.Floor(this.Energy / 0.8);
-
-                        return decision;
-                    }
-                }
+                return decision;
             }
 
             if (destination == null || state.Position == destination)
@@ -80,40 +75,80 @@ namespace Players.TestPlayerV2
 
             decision.Action = PlayerActions.Move;
 
-            Vector2 targetStep = NextStep(state.Position, route, true);
+            Vector2 targetStep = NextStep(state.Position, route, this.energyOptimization);
 
             decision.Target = targetStep;
                        
             return decision;
         }
 
+        private bool AttackLighthouse(IDecision decision)
+        {
+            IEnumerable<ILighthouse> actualPositionLighthouses = Lighthouses.Where(x => x.Position == Position);
+            if (actualPositionLighthouses.Any())
+            {
+                ILighthouse actualPositionLighthouse = actualPositionLighthouses.Single();
+                if (actualPositionLighthouse.IdOwner != this.Id)
+                {
+                    double maxAllowedEnergy = (this.Energy * MAX_ENERGY_CONSUMPTION_COEFFICIENT);
+                    if (actualPositionLighthouse.Energy > maxAllowedEnergy)
+                    {
+                        return false;
+                    }
+
+                    int loadedEnergy;
+                    if (actualPositionLighthouse.Energy == 0)
+                    {
+                        double averageEnergy = Lighthouses.Average(x => x.Energy);
+                        if (averageEnergy == 0)
+                        {
+                            loadedEnergy = (int)Math.Truncate(maxAllowedEnergy);
+                        }
+                        else
+                        {
+                            
+                            loadedEnergy = (int)Math.Truncate(((averageEnergy * ENERGY_INCREMENT) + averageEnergy));
+                        }                        
+                    }
+                    else
+                    { 
+                        loadedEnergy = (actualPositionLighthouse.Energy * 2) + (int)Math.Truncate((actualPositionLighthouse.Energy * ENERGY_INCREMENT));
+                    }
+
+                    if (loadedEnergy > maxAllowedEnergy)
+                    {
+                        return false;
+                    }
+
+                    decision.Action = PlayerActions.Attack;
+                    decision.Energy = loadedEnergy;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void UpdatePlayerState(ITurnState state)
         {
             this.Position = state.Position;
             this.Lighthouses = state.Lighthouses.Select(x => new Lighthouse() { Position = x.Position, Energy = x.Energy, IdOwner = x.IdOwner }).ToList();
-        }
-
-        private Vector2 ClosesLighthouse(Vector2 origin, bool includeOrigin = false)
-        {
-            return this.Lighthouses.Where(x => (includeOrigin || x.Position != origin)).OrderBy(x => Vector2.Distance(origin, x.Position)).First().Position;
-        }
-
-        private Vector2 BestLighthouse(Vector2 origin, bool includeOrigin = false)
-        {
-            //Mejor relación distancia/energía
-            IEnumerable<Lighthouse> distanceEnergyOrdered =  this.Lighthouses.Where(x => (includeOrigin || x.Position != origin))
-                .OrderBy(x => (Vector2.Distance(origin, x.Position) / x.Energy));
-
-            return distanceEnergyOrdered.First().Position;
+            this.Energy = state.Energy;
         }
 
         private Route BestRoute(Vector2 origin, out Vector2? destination)
         {
             List<Route> posibleRoutes = new List<Route>();
 
-            foreach (Lighthouse lighthouse in this.Lighthouses)
+            foreach (Lighthouse lighthouse in Lighthouses.Where(x => x.Position != origin && x.IdOwner != this.Id))
             {
                 posibleRoutes.Add(TraceRoute(origin, lighthouse.Position));
+            }
+
+            if (!posibleRoutes.Any())
+            {
+                posibleRoutes.Add(TraceRoute(origin, Lighthouses.First().Position));
             }
 
             Route bestRoute = posibleRoutes.OrderByDescending(x => x.Way.Sum(w => w.Energy)).First();

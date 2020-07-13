@@ -8,6 +8,7 @@ namespace Entities
 {
     public interface IPlayer
     {
+        string Name { get; set; }
         void Setup(IPlayerConfig playerConfig);
         IDecision Play(ITurnState state);
     }

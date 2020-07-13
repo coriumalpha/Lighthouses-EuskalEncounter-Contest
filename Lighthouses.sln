@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Helpers", "Helpers\Helpers.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entities", "Entities\Entities.csproj", "{8C51EF86-9DD8-4DD4-8B0C-9F3401FF2CD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Players", "Players\Players.csproj", "{2E381D14-CD11-48FF-874E-606A63C8EA5B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Players", "Players\Players.csproj", "{2E381D14-CD11-48FF-874E-606A63C8EA5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

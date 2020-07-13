@@ -9,13 +9,14 @@ namespace Arena
 {
     class Program
     {
-        const int PLAYER_COUNT = 4;
+        const int PLAYER_COUNT = 0;
 
         static void Main(string[] args)
         {
             List<IPlayer> players = new List<IPlayer>();
 
-            players.Add(new TestPlayerV2("Ren-1"));
+            players.Add(new TestPlayerV2("Key/Energy farm equilibrium"));
+            players.Add(new TestPlayerV2("Key farm priority", false));
 
             for (int i = 0; i < (PLAYER_COUNT - 1); i++)
             {
