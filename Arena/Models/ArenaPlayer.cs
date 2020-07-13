@@ -21,11 +21,13 @@ namespace Arena
         public List<Vector2> Keys { get; set; }
         public List<Lighthouse> Lighthouses { get; set; }
         public Cell[] View { get; set; }
+        public List<double> OperationTime { get; set; }
 
         public ArenaPlayer(string name = "")
         {
             this.Keys = new List<Vector2>();
             this.Name = name;
+            this.OperationTime = new List<double>();
         }
 
         public IDecision Play(ITurnState state)

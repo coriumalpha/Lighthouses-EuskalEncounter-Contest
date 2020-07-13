@@ -28,6 +28,16 @@ namespace Arena
                 renderResult.AppendLine(String.Format("    Energy: {0}", player.Energy));
                 renderResult.AppendLine(String.Format("    Keys: {0}", player.Keys.Count()));
                 renderResult.AppendLine(String.Format("    Lighthouses: {0}", lighthouses.Where(x => x.Owner?.Id == player.Id).Count()));
+                renderResult.AppendLine(String.Format("    Operation (ms): {0}", player.OperationTime.LastOrDefault()));
+                renderResult.AppendLine(String.Format("    Operation AVG (ms): {0}", (player.OperationTime.Any()) ? player.OperationTime.Average() : 0));
+                renderResult.AppendLine(String.Format("    Operation MAX (ms): {0}", (player.OperationTime.Any()) ? player.OperationTime.Max() : 0));
+                renderResult.AppendLine();
+            }
+
+            renderResult.AppendLine("Scoring:");
+            foreach (ArenaPlayer player in players.OrderByDescending(x => x.Lighthouses.Count()).ThenBy(x => x.Energy))
+            {
+                renderResult.AppendLine(String.Format("Player {0} {1}", player.Id, player.Name));
             }
 
             Console.SetCursorPosition(0, 0);

@@ -12,9 +12,11 @@ namespace Arena
 {
     public class Engine
     {
-        private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\test.txt";
+        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\simple.txt";
+        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\old.txt";
+        private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\big.txt";
 
-        private const int LOOP_WAIT_TIME = 40;
+        private const int LOOP_WAIT_TIME = 5;
 
         private const int MAX_CELL_ENERGY = 100;
         private const int LIGHTHOUSE_ENERGY_LOST_PER_TURN = 10;
@@ -48,7 +50,14 @@ namespace Arena
                 Position = player.Position
             };
 
+            Stopwatch decisionTime = new Stopwatch();
+
+            decisionTime.Restart();
             IDecision decision = player.Play(state);
+            decisionTime.Stop();
+
+            player.OperationTime.Add(decisionTime.ElapsedMilliseconds);
+            
 
             switch (decision.Action)
             {

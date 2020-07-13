@@ -143,12 +143,27 @@ namespace Players.TestPlayerV2
 
             foreach (Lighthouse lighthouse in Lighthouses.Where(x => x.Position != origin && x.IdOwner != this.Id))
             {
-                posibleRoutes.Add(TraceRoute(origin, lighthouse.Position));
+                Route suggestedRoute = TraceRoute(origin, lighthouse.Position);
+                if (suggestedRoute == null)
+                {
+                    continue;
+                }
+
+                posibleRoutes.Add(suggestedRoute);
             }
 
             if (!posibleRoutes.Any())
             {
-                posibleRoutes.Add(TraceRoute(origin, Lighthouses.First().Position));
+                Route suggestedRoute = TraceRoute(origin, Lighthouses.First().Position);
+                if (suggestedRoute == null)
+                {
+                    //Caso excepcional. No hay ningún faro accesible, dirigirse a casilla aleatoria accesible
+                    //Por ahora podría generar excepciones
+                    destination = null;
+                    return null;
+                }
+
+                posibleRoutes.Add(suggestedRoute);
             }
 
             Route bestRoute = posibleRoutes.OrderByDescending(x => x.Way.Sum(w => w.Energy)).First();
@@ -159,6 +174,7 @@ namespace Players.TestPlayerV2
 
         private Route TraceRoute(Vector2 originVector, Vector2 destinationVector)
         {
+            //TODO: No siempre es posible obtener una ruta entre dos puntos
             List<Step> steps = new List<Step>();
             List<ICell> visitedCells = new List<ICell>();
 
@@ -192,7 +208,12 @@ namespace Players.TestPlayerV2
                             goto floodFinished;
                         }
                     }
-                }               
+                }
+
+                if (!actualStep.Discoveries.Any())
+                {
+                    goto floodFinishedWithNoResult;
+                }
 
                 counter++;
             }
@@ -218,6 +239,10 @@ namespace Players.TestPlayerV2
 
             route.Way.Reverse();
             return route;
+
+        floodFinishedWithNoResult:
+            return null;
+
         }
 
         private IEnumerable<ICell> DiscoverCloseCells(ICell cell, List<ICell> visited)
@@ -265,7 +290,13 @@ namespace Players.TestPlayerV2
             double energyDifference = (maxEnergy.Energy - defaultNextWaypoing.Energy);
             if (energyDifference > MIN_ALTER_ROUTE_ENERGY_DIFFERENCE)
             {
-                this.route = TraceRoute(maxEnergy.Position, route.Destination.Position);
+                Route suggestedRoute = TraceRoute(maxEnergy.Position, route.Destination.Position);
+                if (suggestedRoute == null)
+                {
+                    return defaultNextWaypoing;
+                }
+
+                this.route = suggestedRoute;
 
                 return maxEnergy;
             }

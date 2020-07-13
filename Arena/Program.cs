@@ -16,7 +16,9 @@ namespace Arena
             List<IPlayer> players = new List<IPlayer>();
 
             players.Add(new TestPlayerV2("Key/Energy farm equilibrium"));
+            players.Add(new TestPlayerV2("Key/Energy farm equilibrium 2"));
             players.Add(new TestPlayerV2("Key farm priority", false));
+            players.Add(new TestPlayerV2("Key farm priority 2", false));
 
             for (int i = 0; i < (PLAYER_COUNT - 1); i++)
             {

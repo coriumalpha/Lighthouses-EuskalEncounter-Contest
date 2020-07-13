@@ -88,9 +88,9 @@ namespace Arena
                 }
 
                 lighthouses.Add(new Vector2(counter, positionY));
+                counter++;
             }
 
-            counter++;
             return lighthouses;
         }
         private static List<ICell> LineToCells(string line, int positionY)
