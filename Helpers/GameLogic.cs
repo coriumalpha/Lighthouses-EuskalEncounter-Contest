@@ -1,4 +1,5 @@
 ﻿using Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -23,6 +24,13 @@ namespace Helpers
         {
             Vector2 destination = Vector2.Add(origin, step);
             return IsValidMovement(destination, grid);
+        }
+
+        public static Vector2 GetRandomPlayablePosition(IMap map, Random rand)
+        {
+            IEnumerable<ICell> playableCells = map.Grid.Where(x => x.IsPlayable);
+
+            return playableCells.ElementAt(rand.Next(playableCells.Count())).Position;
         }
     }
 }

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Players.TestPlayerV2
+namespace Players.BotV2.Models
 {
     class Discovery
     {

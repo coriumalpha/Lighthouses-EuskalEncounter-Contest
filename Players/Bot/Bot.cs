@@ -4,11 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 
-namespace Players
+namespace Players.Bot
 {
-    public class TestPlayer : IPlayer
+    public class Bot : IPlayer
     {
         #region Public properties
         public int Id { get; set; }
@@ -27,7 +26,7 @@ namespace Players
 
         private Random rand;
 
-        public TestPlayer()
+        public Bot()
         {
             this.rand = new Random();
             this.Keys = new List<Vector2>();

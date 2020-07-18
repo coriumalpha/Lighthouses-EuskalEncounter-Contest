@@ -11,13 +11,14 @@ namespace Arena
         private const string CELLFORMAT = " {0} ";
         private const int MAX_CELL_ENERGY = 100; //TODO: Add to config
 
-        public static void Render(MapArena map, IEnumerable<ArenaPlayer> players, IEnumerable<Lighthouse> lighthouses)
+        public static void Render(Map map, IEnumerable<ArenaPlayer> players, IEnumerable<Lighthouse> lighthouses)
         {
-            SetRenderGrid(ref map);
-            SetPlayers(ref map, players);
-            SetLighthouses(ref map, lighthouses);
+            RenderMap renderMap = new RenderMap(map.Size, map.Grid);
+            SetRenderGrid(renderMap);
+            SetPlayers(renderMap, players);
+            SetLighthouses(renderMap, lighthouses);
 
-            StringBuilder renderResult = RenderMap(map);
+            StringBuilder renderResult = RenderMap(renderMap);
 
             renderResult.AppendLine();
 
@@ -44,7 +45,7 @@ namespace Arena
             Console.Write(renderResult);
         }
 
-        private static void SetRenderGrid(ref MapArena map)
+        private static void SetRenderGrid(RenderMap map)
         {
             IEnumerable<RendererCell> cells = map.Grid.Select(x =>
                 new RendererCell { Position = x.Position, IsPlayable = x.IsPlayable, Energy = x.Energy}
@@ -53,7 +54,7 @@ namespace Arena
             map.RenderGrid = cells.ToList();
         }
 
-        private static void SetPlayers(ref MapArena map, IEnumerable<ArenaPlayer> players)
+        private static void SetPlayers(RenderMap map, IEnumerable<ArenaPlayer> players)
         {
             foreach (ArenaPlayer player in players)
             {
@@ -67,7 +68,7 @@ namespace Arena
             }
         }
 
-        private static void SetLighthouses(ref MapArena map, IEnumerable<Lighthouse> lighthouses)
+        private static void SetLighthouses(RenderMap map, IEnumerable<Lighthouse> lighthouses)
         {
             foreach (Lighthouse lighthouse in lighthouses)
             {
@@ -113,7 +114,7 @@ namespace Arena
             return strRow.ToString();
         }
 
-        private static StringBuilder RenderMap(MapArena map)
+        private static StringBuilder RenderMap(RenderMap map)
         {
             StringBuilder strMap = new StringBuilder();
             string scaleX = String.Format(CELLFORMAT, "XX");

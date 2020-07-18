@@ -1,13 +1,11 @@
 ﻿using Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace Arena
 {
-    public class ArenaPlayer
+    public class ArenaPlayer : IPlayer
     {
         public IPlayer PlayerDCI;
         public int Id { get; set; }
@@ -35,13 +33,12 @@ namespace Arena
             return this.PlayerDCI.Play(state);
         }
 
-        public void Setup(PlayerConfig playerConfig)
+        public void Setup(IPlayerConfig playerConfig)
         {
             this.Id = playerConfig.Id;
             this.PlayerCount = playerConfig.PlayerCount;
             this.Position = playerConfig.Position;
             this.Map = playerConfig.Map;
-            this.PlayerDCI = playerConfig.PlayerDCI;
             this.Lighthouses = playerConfig.Lighthouses.Select(x => new Lighthouse() { Position = x }).ToList();
         }
     }

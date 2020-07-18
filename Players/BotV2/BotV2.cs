@@ -1,15 +1,14 @@
 ﻿using Entities;
 using Helpers;
+using Players.BotV2.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Players.TestPlayerV2
+namespace Players.BotV2
 {
-    public class TestPlayerV2 : IPlayer
+    public class BotV2 : IPlayer
     {
         private const int MAX_CELL_ENERGY = 100;
         private const int MIN_ALTER_ROUTE_ENERGY_DIFFERENCE = 80;
@@ -38,7 +37,7 @@ namespace Players.TestPlayerV2
         private Route route;
         private bool energyOptimization;
 
-        public TestPlayerV2(string name = "", bool energyOptimization = true)
+        public BotV2(string name = "", bool energyOptimization = true)
         {
             this.MAX_STEP_DISTANCE = Vector2.Distance(new Vector2(0, 0), new Vector2(1, 1));
             this.Name = name;

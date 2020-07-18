@@ -19,14 +19,14 @@ namespace Arena
         private const int LIGHTHOUSE_ENERGY_LOST_PER_TURN = 10;
 
         private MapNames selectedMap;
-        private MapArena map;
+        private Map _map;
         private List<Lighthouse> _lighthouses;
-        private IEnumerable<ArenaPlayer> players;
-        private Random rand;
+        private IEnumerable<ArenaPlayer> _players;
+        private Random _rand;
 
         public Engine(IEnumerable<IPlayer> players, MapNames mapName)
         {
-            this.rand = new Random();
+            this._rand = new Random();
             this.selectedMap = mapName;
             Setup(players);
         }
@@ -74,8 +74,10 @@ namespace Arena
                 //    break;
             }
 
-            Renderer.Render(this.map, this.players, this._lighthouses);
+            Renderer.Render(this._map, this._players, this._lighthouses);
         }
+
+        #region Action methods
 
         private void HandleAttack(ArenaPlayer player, int energy)
         {
@@ -95,9 +97,9 @@ namespace Arena
 
             if (energy > lighthouse.Energy)
             {
-                if (players.Where(x => x.Lighthouses.Contains(lighthouse)).Any())
+                if (_players.Where(x => x.Lighthouses.Contains(lighthouse)).Any())
                 {
-                    ArenaPlayer oldOwner = players.Where(x => x.Lighthouses.Contains(lighthouse)).Single();
+                    ArenaPlayer oldOwner = _players.Where(x => x.Lighthouses.Contains(lighthouse)).Single();
                     oldOwner.Lighthouses.Remove(lighthouse);
                 }
                 player.Lighthouses.Add(lighthouse);
@@ -111,7 +113,7 @@ namespace Arena
         private void HandleMovement(ArenaPlayer player, Vector2 target)
         {
             Vector2 destination = player.Position + target;
-            if (!(GameLogic.IsValidMovement(destination, map.Grid)))
+            if (!(GameLogic.IsValidMovement(destination, _map.Grid)))
             {
                 throw new Exception("Invalid movement");
             }
@@ -124,6 +126,10 @@ namespace Arena
             player.Position = destination;
         }
 
+        #endregion
+
+        #region Turn methods
+
         private void TurnDispatcher()
         {
             SetCellEnergy();
@@ -131,7 +137,7 @@ namespace Arena
             UpdateLighthousesEnergy();
             RemoveConsumedEnergyFromCells();
 
-            foreach (ArenaPlayer player in this.players)
+            foreach (ArenaPlayer player in this._players)
             {
                 Turn(player);
                 Thread.Sleep(LOOP_WAIT_TIME);
@@ -139,7 +145,6 @@ namespace Arena
             TurnDispatcher();
         }
 
-        #region Turn methods
         private void UpdateLighthousesEnergy()
         {
             IEnumerable<Lighthouse> energyzedLighthouses = _lighthouses.Where(x => x.Energy > 0);
@@ -157,21 +162,21 @@ namespace Arena
 
         private void RemoveConsumedEnergyFromCells()
         {
-            foreach (ArenaPlayer player in this.players)
+            foreach (ArenaPlayer player in this._players)
             {
-                this.map.Grid.Where(x => x.Position == player.Position).Single().Energy = 0;
+                this._map.Grid.Where(x => x.Position == player.Position).Single().Energy = 0;
             }
         }
 
         private void SetPlayerEnergy()
         {
-            foreach (ArenaPlayer player in this.players)
+            foreach (ArenaPlayer player in this._players)
             {
-                int cellEnergy = this.map.Grid.Where(x => x.Position == player.Position).Single().Energy;
+                int cellEnergy = this._map.Grid.Where(x => x.Position == player.Position).Single().Energy;
 
-                if (this.players.Where(x => x.Position == player.Position).Count() > 1)
+                if (this._players.Where(x => x.Position == player.Position).Count() > 1)
                 {
-                    player.Energy += (int)Math.Floor((double)cellEnergy / this.players.Where(x => x.Position == player.Position).Count());
+                    player.Energy += (int)Math.Floor((double)cellEnergy / this._players.Where(x => x.Position == player.Position).Count());
                 }
 
                 player.Energy += cellEnergy;
@@ -180,7 +185,7 @@ namespace Arena
 
         private void SetCellEnergy()
         {
-            foreach (ICell cell in this.map.Grid)
+            foreach (ICell cell in this._map.Grid)
             {
                 UpdateCellEnergy(cell);
             }
@@ -211,11 +216,16 @@ namespace Arena
         #region Setup methods
         private void Setup(IEnumerable<IPlayer> players)
         {
-            MapDTO mapData = Parser.LoadToMap(selectedMap);
+            MapDTO mapData = MapParser.LoadToMap(selectedMap);
 
-            this.map = mapData.Map;
+            SetupMap(mapData.Map);
             SetupLighthouses(mapData.Lighthouses);
             SetupPlayers(players);
+        }
+
+        private void SetupMap(Map map)
+        { 
+            _map = map;
         }
 
         private void SetupPlayers(IEnumerable<IPlayer> players)
@@ -230,13 +240,15 @@ namespace Arena
                 PlayerConfig playerConfig = CreatePlayerConfig(counter, player, players.Count());
 
                 arenaPlayer.Setup(playerConfig);
+                arenaPlayer.PlayerDCI = playerConfig.PlayerDCI;
+
                 player.Setup(playerConfig);
 
                 playerList.Add(arenaPlayer);
                 counter++;
             }
 
-            this.players = playerList;
+            this._players = playerList;
         }
 
         private PlayerConfig CreatePlayerConfig(int id, IPlayer playerPCI, int playerCount)
@@ -245,9 +257,9 @@ namespace Arena
             {
                 Id = id,
                 Lighthouses = this._lighthouses.Select(x => x.Position),
-                Map = this.map,
+                Map = this._map,
                 PlayerCount = playerCount,
-                Position = GetRandomPlayablePosition(),
+                Position = GameLogic.GetRandomPlayablePosition(_map, _rand),
                 PlayerDCI = playerPCI
             };
 
@@ -275,18 +287,6 @@ namespace Arena
         private bool IsLighthouse(Vector2 target)
         {
             return this._lighthouses.Where(x => x.Position == target).Any();
-        }
-      
-        private ICell GetCellByPosition(Vector2 position)
-        {
-            return this.map.Grid.Where(x => x.Position == position).Single();
-        }
-
-        private Vector2 GetRandomPlayablePosition()
-        {
-            IEnumerable<ICell> playableCells = this.map.Grid.Where(x => x.IsPlayable);
-
-            return playableCells.ElementAt(rand.Next(playableCells.Count())).Position;
         }
         #endregion
         #endregion

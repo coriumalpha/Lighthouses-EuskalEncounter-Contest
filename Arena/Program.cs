@@ -1,7 +1,7 @@
 ﻿using Entities;
 using Entities.Enums;
 using Players;
-using Players.TestPlayerV2;
+using Players.BotV2;
 using System.Collections.Generic;
 
 namespace Arena
@@ -15,10 +15,10 @@ namespace Arena
             //Player config
             List<IPlayer> players = new List<IPlayer>();
 
-            players.Add(new TestPlayerV2("Key/Energy farm equilibrium"));
-            players.Add(new TestPlayerV2("Key/Energy farm equilibrium 2"));
-            players.Add(new TestPlayerV2("Key farm priority", false));
-            players.Add(new TestPlayerV2("Key farm priority 2", false));
+            players.Add(new BotV2("Key/Energy farm equilibrium"));
+            players.Add(new BotV2("Key/Energy farm equilibrium 2"));
+            players.Add(new BotV2("Key farm priority", false));
+            players.Add(new BotV2("Key farm priority 2", false));
 
             for (int i = 0; i < (PLAYER_COUNT - 1); i++)
             {

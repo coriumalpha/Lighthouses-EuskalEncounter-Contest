@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Players.TestPlayerV2
+namespace Players.BotV2.Models
 {
     class Route
     {

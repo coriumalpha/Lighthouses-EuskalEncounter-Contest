@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-namespace Arena
+namespace Helpers
 {
-    public static class Parser
+    public static class MapParser
     {
-        private static MapArena map;
-
         public static MapDTO LoadToMap(MapNames mapName)
         {
             IEnumerable<string> lines = Helpers.Maps.GetFileLines(mapName);
@@ -28,11 +26,9 @@ namespace Arena
 
             int sizeX = lines.First().Length;
             int sizeY = lines.Count();
-            Parser.map = new MapArena(new Vector2(sizeX, sizeY), cells);
-
             MapDTO mapData = new MapDTO()
             {
-                Map = map,
+                Map = new Map(new Vector2(sizeX, sizeY), cells),
                 Lighthouses = lighthouses
             };
 

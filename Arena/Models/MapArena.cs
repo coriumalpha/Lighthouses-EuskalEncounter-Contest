@@ -6,11 +6,11 @@ using System.Text;
 
 namespace Arena
 {
-    public class MapArena : IMap
+    public class RenderMap : IMap
     {
-        public MapArena(Vector2 size, List<ICell> cells)
+        public RenderMap(Vector2 size, List<ICell> grid)
         {
-            Grid = cells;
+            Grid = grid;
             Size = size;
         }
 
