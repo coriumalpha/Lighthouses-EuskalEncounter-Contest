@@ -1,6 +1,7 @@
 ﻿using Entities;
 using Entities.Enums;
 using Players;
+using Players.Bot;
 using Players.BotV2;
 using System.Collections.Generic;
 
@@ -22,7 +23,7 @@ namespace Arena
 
             for (int i = 0; i < (PLAYER_COUNT - 1); i++)
             {
-                IPlayer player = new TestPlayer();
+                IPlayer player = new Bot();
                 players.Add(player);
             }
 
