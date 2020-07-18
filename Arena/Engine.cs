@@ -69,9 +69,9 @@ namespace Arena
                 //case PlayerActions.Connect:
                 //    HandleConnect(player, decision.Target);
                 //    break;
-                //case PlayerActions.Pass:
-                //    HandlePass(player);
-                //    break;
+                case PlayerActions.Pass:
+                    HandlePass(player);
+                    break;
             }
 
             Renderer.Render(this._map, this._players, this._lighthouses);
@@ -124,6 +124,11 @@ namespace Arena
             }
 
             player.Position = destination;
+        }
+
+        private void HandlePass(ArenaPlayer player)
+        {
+            //Nothing changes, for now...
         }
 
         #endregion
