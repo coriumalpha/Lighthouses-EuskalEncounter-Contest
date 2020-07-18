@@ -1,10 +1,8 @@
 ﻿using Entities;
-using System;
+using Entities.Enums;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace Arena
 {
@@ -12,12 +10,11 @@ namespace Arena
     {
         private static MapArena map;
 
-        public static MapDTO LoadToMap(string filePath)
+        public static MapDTO LoadToMap(MapNames mapName)
         {
-            IEnumerable<string> lines = GetFileLines(filePath);
+            IEnumerable<string> lines = Helpers.Maps.GetFileLines(mapName);
             List<ICell> cells = new List<ICell>();
             List<Vector2> lighthouses = new List<Vector2>();
-            List<Vector2> playerSlots = new List<Vector2>();
 
             int counter = 0;
             foreach (string line in lines)
@@ -26,7 +23,6 @@ namespace Arena
                 //No se prioriza al no formar parte del reto
                 lighthouses.AddRange(LineToLighthouses(line, counter));
                 cells.AddRange(LineToCells(line, counter));
-                playerSlots.AddRange(LineToPlayerSlots(line, counter));
                 counter++;
             }
 
@@ -37,41 +33,10 @@ namespace Arena
             MapDTO mapData = new MapDTO()
             {
                 Map = map,
-                Lighthouses = lighthouses,
-                PlayerSlots = playerSlots
+                Lighthouses = lighthouses
             };
 
             return mapData;
-        }
-
-        private static IEnumerable<string> GetFileLines(string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                throw new Exception("File doesn't exist");
-            }
-
-            return File.ReadLines(filePath);
-        }
-
-        private static List<Vector2> LineToPlayerSlots(string line, int positionY)
-        {
-            List<Vector2> playerSlots = new List<Vector2>();
-            string slotchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-            int counter = 0;
-            foreach (char cellchar in line)
-            {
-                if (!slotchars.Contains(cellchar))
-                {
-                    continue;
-                }
-
-                playerSlots.Add(new Vector2(counter, positionY));
-                counter++;
-            }
-
-            return playerSlots;
         }
 
         private static List<Vector2> LineToLighthouses(string line, int positionY)

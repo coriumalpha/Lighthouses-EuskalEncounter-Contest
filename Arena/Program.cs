@@ -1,9 +1,8 @@
 ﻿using Entities;
+using Entities.Enums;
 using Players;
 using Players.TestPlayerV2;
-using System;
 using System.Collections.Generic;
-using System.Numerics;
 
 namespace Arena
 {
@@ -13,6 +12,7 @@ namespace Arena
 
         static void Main(string[] args)
         {
+            //Player config
             List<IPlayer> players = new List<IPlayer>();
 
             players.Add(new TestPlayerV2("Key/Energy farm equilibrium"));
@@ -26,7 +26,11 @@ namespace Arena
                 players.Add(player);
             }
 
-            Engine game = new Engine(players);
+            //Map config
+            MapNames mapName = MapNames.Old;
+
+            //Engine setup and start
+            Engine game = new Engine(players, mapName);
             game.Start();
         }
     }

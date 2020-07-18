@@ -9,6 +9,5 @@ namespace Arena
     {
         public MapArena Map { get; set; }
         public List<Vector2> Lighthouses { get; set; }
-        public List<Vector2> PlayerSlots { get; set; }
     }
 }

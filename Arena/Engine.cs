@@ -1,34 +1,33 @@
 ﻿using Entities;
+using Entities.Enums;
 using Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading;
 
 namespace Arena
 {
     public class Engine
     {
-        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\simple.txt";
-        //private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\old.txt";
-        private const string MAP_PATH = @"C:\Users\Corium\Desktop\Mapas Lighthouses\big.txt";
 
-        private const int LOOP_WAIT_TIME = 5;
+        private const int LOOP_WAIT_TIME = 1;
 
         private const int MAX_CELL_ENERGY = 100;
         private const int LIGHTHOUSE_ENERGY_LOST_PER_TURN = 10;
 
+        private MapNames selectedMap;
         private MapArena map;
         private List<Lighthouse> _lighthouses;
         private IEnumerable<ArenaPlayer> players;
         private Random rand;
 
-        public Engine(IEnumerable<IPlayer> players)
+        public Engine(IEnumerable<IPlayer> players, MapNames mapName)
         {
             this.rand = new Random();
+            this.selectedMap = mapName;
             Setup(players);
         }
 
@@ -212,7 +211,7 @@ namespace Arena
         #region Setup methods
         private void Setup(IEnumerable<IPlayer> players)
         {
-            MapDTO mapData = Parser.LoadToMap(MAP_PATH);
+            MapDTO mapData = Parser.LoadToMap(selectedMap);
 
             this.map = mapData.Map;
             SetupLighthouses(mapData.Lighthouses);
